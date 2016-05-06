@@ -8,6 +8,11 @@ class ImageToCSV:
     image_directory = None
     training_data = []
     image_pixels = []
+    type0 = 0
+    type1 = 0
+    type2 = 0
+    type3 = 0
+    type4 = 0
 
     def __init__(self, image_num, image_directory):
         self.image_num = image_num
@@ -27,11 +32,9 @@ class ImageToCSV:
         cvt_cmp_img_pixels, cvt_ref_img_pixels = list(cvt_cmp_img.getdata()), list(cvt_ref_img.getdata())
         diff_all_pixel, i = 0, 0
 
-        for pix1 in cvt_cmp_img_pixels:
-            pix2 = cvt_ref_img_pixels[i]
-            if abs(pix1 - pix2) != 0:
+        for pix in range(0, len(cvt_cmp_img_pixels)):
+            if abs(cvt_cmp_img_pixels[pix] - cvt_ref_img_pixels[pix]) != 0:
                 diff_all_pixel += 1
-            i += 1
 
         all_pixels = cvt_cmp_img.size[0] * cvt_cmp_img.size[1]
         return (float(diff_all_pixel) * 10000) / (float(all_pixels) * percentage)
@@ -65,6 +68,8 @@ class ImageToCSV:
 
         if diff_percentage < 14:
             result_type = 0
+            print('type: ' + str(result_type) + '\n')
+            self.type0 += 1
 
         elif 14 <= diff_percentage < 25:
             result_type = self._check_image_type(a, sim_per, 1)
@@ -86,6 +91,8 @@ class ImageToCSV:
 
         elif 80 <= diff_percentage:
             result_type = 4
+            print('type: ' + str(result_type) + '\n')
+            self.type4 += 1
 
         out.write(str(result_type) + ",")
         for c in range(0, len(self.image_pixels)):
@@ -104,10 +111,17 @@ class ImageToCSV:
 
         if sim_per.index(min(sim_per)) >= 3:
             result_type = 3
+            self.type3 += 1
+            print('type: ' + str(result_type) + '\n')
+            return result_type
         else:
             result_type = sim_per.index(min(sim_per))
-
-        return result_type
+            if result_type == 0:
+                self.type1 += 1
+            elif result_type == 1:
+                self.type2 += 1
+            print('type: ' + str(result_type + 1) + '\n')
+            return result_type + 1
 
 
 if __name__ == '__main__':
